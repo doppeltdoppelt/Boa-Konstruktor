@@ -1,5 +1,3 @@
-import discord
-import nacl
 from discord.ext import commands
 
 from maincog import MainCog
