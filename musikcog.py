@@ -3,6 +3,8 @@ from discord.ext import commands
 
 from youtube_dl import YoutubeDL
 
+show_currently_playing = True
+
 
 class MusikCog(commands.Cog):
     def __init__(self, bot):
@@ -26,24 +28,26 @@ class MusikCog(commands.Cog):
                 return False
         return {'source': info['formats'][0]['url'], 'title': info['title']}  # dictionary fuer die songinfos
 
-    def next_song(self):
+    async def next_song(self, ctx):
         # wir koennen keine playlist abspielen die leer ist
         if len(self.musikQueue) > 0:
             self.isPlaying = True
-
-            url = self.musikQueue[0][0]['source']  # erste URL aus dem dictionary kriege n
+            if show_currently_playing:
+                await ctx.send("Playing now: " + self.musikQueue[0][0]['title'])
+            url = self.musikQueue[0][0]['source']  # erste URL aus dem dictionary kriegen
             self.musikQueue.pop(0)  # erstes Element loeschen, da mans ja grade spielt
 
             self.vChannel.play(discord.FFmpegPCMAudio(url, **self.FFMEPG_OPTIONS), after=lambda e: self.next_song)
         else:
             self.isPlaying = False
 
-    async def play_song(self):
+    async def play_song(self, ctx):
         if len(self.musikQueue) > 0:
             self.isPlaying = True
 
             url = self.musikQueue[0][0]['source']
-
+            if show_currently_playing:
+                await ctx.send("Playing now: " + self.musikQueue[0][0]['title'])
             # try connect zum voicechannel, falls noch nicht, oder move wenn schon falsch connected
             if self.vChannel == "" or self.vChannel is None or not self.vChannel.is_connected():
                 self.vChannel = await self.musikQueue[0][1].connect()
@@ -54,7 +58,7 @@ class MusikCog(commands.Cog):
 
             self.musikQueue.pop(0)
 
-            self.vChannel.play(discord.FFmpegPCMAudio(url, **self.FFMEPG_OPTIONS), after=lambda e: self.next_song)
+            self.vChannel.play(discord.FFmpegPCMAudio(url, **self.FFMEPG_OPTIONS), after=lambda e: self.next_song(ctx))
         else:
             self.isPlaying = False
 
@@ -72,11 +76,11 @@ class MusikCog(commands.Cog):
                 await ctx.send(
                     "Konnte den Song nicht hinzufuegen. Sogar der Entwickler weiss nicht, warum. Vermeidet Livestreams.")
             else:
-                await ctx.send("Song zur Queue hinzugefuegt.")
+                await ctx.send("Playing now: " + self.musikQueue[0][0]['title'])
                 self.musikQueue.append([song, authorv_channel])
 
                 if not self.isPlaying:
-                    await self.play_song()
+                    await self.play_song(ctx)
 
     # playlist anzeigen
     @commands.command(name="queue", help="Zeigt die Queue an.")
@@ -97,4 +101,4 @@ class MusikCog(commands.Cog):
     async def skip(self, ctx):
         if self.vChannel != "" and self.vChannel:
             self.vChannel.stop()
-            await self.play_song()
+            await self.play_song(ctx)
