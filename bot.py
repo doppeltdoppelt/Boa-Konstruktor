@@ -1,16 +1,14 @@
+import discord
 from discord.ext import commands
+from dislash import InteractionClient
+from utilcog import UtilCog
+from musiccog import MusicCog
 
-from maincog import MainCog
-from musikcog import MusikCog
+bot = commands.Bot(command_prefix='/', intents=discord.Intents.default())
+slash = InteractionClient(bot, test_guilds=[776846718892376104])
 
-bot = commands.Bot(command_prefix='/')
-bot.remove_command('help')
+bot.add_cog(UtilCog(slash))
+bot.add_cog(MusicCog(slash))
 
-bot.add_cog(MainCog(bot))
-bot.add_cog(MusikCog(bot))
-
-token = ""
 with open("token.txt") as file:
-    token = file.read()
-
-bot.run(token)
+    bot.run(file.read())
