@@ -5,7 +5,7 @@ from utilcog import UtilCog
 from musiccog import MusicCog
 
 bot = commands.Bot(command_prefix='/', intents=discord.Intents.default())
-slash = InteractionClient(bot, test_guilds=[776846718892376104])
+slash = InteractionClient(bot, test_guilds=[887285894577528852])
 
 bot.add_cog(UtilCog(slash))
 bot.add_cog(MusicCog(slash))
